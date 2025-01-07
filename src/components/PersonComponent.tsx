@@ -1,5 +1,5 @@
 import React from 'react';
-import { Person } from '../types';
+import { emptyPerson, Person } from '../types';
 import { useParams } from 'react-router-dom';
 import classNames from 'classnames';
 import { PersonLink } from './PersonLink';
@@ -9,6 +9,7 @@ type Props = {
 
 export const PersonComponent: React.FC<Props> = ({ person }) => {
   const personSlug = useParams();
+  const { sex, born, died, mother, father, motherName, fatherName } = person;
 
   return (
     <tr
@@ -20,22 +21,14 @@ export const PersonComponent: React.FC<Props> = ({ person }) => {
       <td>
         <PersonLink person={person} />
       </td>
-      <td>{person.sex}</td>
-      <td>{person.born}</td>
-      <td>{person.died}</td>
+      <td>{sex}</td>
+      <td>{born}</td>
+      <td>{died}</td>
       <td>
-        {person.mother ? (
-          <PersonLink person={person.mother} />
-        ) : (
-          person.motherName || '-'
-        )}
+        {mother ? <PersonLink person={mother} /> : motherName || emptyPerson}
       </td>
       <td>
-        {person.father ? (
-          <PersonLink person={person.father} />
-        ) : (
-          person.fatherName || '-'
-        )}
+        {father ? <PersonLink person={father} /> : fatherName || emptyPerson}
       </td>
     </tr>
   );

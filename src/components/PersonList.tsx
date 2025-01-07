@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { PersonComponent } from '../components/PersonComponent';
-import { Person } from '../types';
+import { Person, personFields } from '../types';
 import { getPeople } from '../api';
 import { Loader } from './Loader';
 import { Errors } from '../types/Errors';
-// type Props = {
-//   personList: Person[];
-// };
 
 export const PersonList: React.FC = () => {
   const [personList, setPersonList] = useState<Person[]>([]);
@@ -25,15 +22,50 @@ export const PersonList: React.FC = () => {
       </p>
     );
 
+  const pageContent = () => {
+    return personError !== null ? (
+      getErrorMessageBlock()
+    ) : (
+      <table
+        data-cy="peopleTable"
+        className="table is-striped is-hoverable is-narrow is-fullwidth"
+      >
+        <thead>
+          <tr>
+            {personFields.map(field => (
+              <th key={field}>{field}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {personList.map(person => (
+            <PersonComponent key={person.name} person={person} />
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
   useEffect(() => {
     getPeople()
       .then(persons => {
         if (persons.length === 0) {
-          throw new Error(Errors.noPeopleMessage);
+          setPersonError(Errors.noPeopleMessage);
+
+          return;
         }
 
         setPersonError(null);
-        setPersonList(persons);
+        const personsWithParents = persons.map(person => {
+          const currentPerson = { ...person };
+
+          currentPerson.father = getParent(persons, person.fatherName);
+          currentPerson.mother = getParent(persons, person.motherName);
+
+          return currentPerson;
+        });
+
+        setPersonList(personsWithParents);
         setIsPersonListLoaded(true);
         for (const person of persons) {
           person.father = getParent(persons, person.fatherName);
@@ -53,32 +85,7 @@ export const PersonList: React.FC = () => {
     <div className="block">
       <div className="box table-container">
         <h1 className="title">People Page</h1>
-        {!isPersonListLoaded ? (
-          <Loader />
-        ) : personError !== null ? (
-          getErrorMessageBlock()
-        ) : (
-          <table
-            data-cy="peopleTable"
-            className="table is-striped is-hoverable is-narrow is-fullwidth"
-          >
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Sex</th>
-                <th>Born</th>
-                <th>Died</th>
-                <th>Mother</th>
-                <th>Father</th>
-              </tr>
-            </thead>
-            <tbody>
-              {personList.map(person => (
-                <PersonComponent key={person.name} person={person} />
-              ))}
-            </tbody>
-          </table>
-        )}
+        {!isPersonListLoaded ? <Loader /> : pageContent()}
       </div>
     </div>
   );
