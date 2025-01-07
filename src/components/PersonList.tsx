@@ -67,10 +67,6 @@ export const PersonList: React.FC = () => {
 
         setPersonList(personsWithParents);
         setIsPersonListLoaded(true);
-        for (const person of persons) {
-          person.father = getParent(persons, person.fatherName);
-          person.mother = getParent(persons, person.motherName);
-        }
       })
       // eslint-disable-next-line @typescript-eslint/no-shadow
       .catch(error => {
